@@ -28,6 +28,8 @@ try:
 except ImportError:
     TENSORBOARD_FOUND = False
 
+
+
 def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from):
     first_iter = 0
     tb_writer = prepare_output_and_logger(dataset)
@@ -43,6 +45,114 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
     iter_start = torch.cuda.Event(enable_timing = True)
     iter_end = torch.cuda.Event(enable_timing = True)
+
+
+    
+    #Modify gaussians (double)
+    """
+    gaussians._xyz = torch.cat((gaussians._xyz, gaussians._xyz))
+    gaussians._features_dc = torch.cat((gaussians._features_dc, gaussians._features_dc))
+    gaussians._features_rest = torch.cat((gaussians._features_rest, gaussians._features_rest))
+    gaussians._rotation = torch.cat((gaussians._rotation, gaussians._rotation))
+    gaussians._scaling = torch.cat((gaussians._scaling, gaussians._scaling))
+    gaussians._opacity = torch.cat((gaussians._opacity, gaussians._opacity))
+    gaussians.max_radii2D = torch.cat((gaussians.max_radii2D, gaussians.max_radii2D))
+    gaussians.xyz_gradient_accum = torch.cat((gaussians.xyz_gradient_accum, gaussians.xyz_gradient_accum))
+    gaussians.denom = torch.cat((gaussians.denom, gaussians.denom))
+    """
+
+
+    #Detach
+    gaussians._xyz =  gaussians._xyz.detach()
+    gaussians._features_dc = gaussians._features_dc.detach()
+    gaussians._features_rest =  gaussians._features_rest.detach()
+    gaussians._rotation = gaussians._rotation.detach()
+    gaussians._scaling = gaussians._scaling.detach()
+    gaussians._opacity =  gaussians._opacity.detach()
+    gaussians._scaling = gaussians._scaling.detach()
+    gaussians.max_radii2D =  gaussians.max_radii2D.detach()
+    gaussians.xyz_gradient_accum = gaussians.xyz_gradient_accum.detach()
+    gaussians.denom =  gaussians.denom.detach()
+
+
+
+    #Get number of Gausses
+    nGausses = gaussians._xyz.size(0)
+
+
+    #Shuffle
+    r=torch.randperm(nGausses)
+    gaussians._xyz = gaussians._xyz [r]
+    gaussians._features_dc = gaussians._features_dc [r]
+    gaussians._features_rest = gaussians._features_rest [r]
+    gaussians._rotation = gaussians._rotation [r]
+    gaussians._scaling = gaussians._scaling [r]
+    gaussians._opacity = gaussians._opacity [r]
+    gaussians._scaling = gaussians._scaling [r]
+    gaussians.max_radii2D = gaussians.max_radii2D [r]
+    gaussians.xyz_gradient_accum = gaussians.xyz_gradient_accum [r]
+    gaussians.denom = gaussians.denom [r]
+
+
+    #Create index of 10% first Gausses and add 0.2 to opacity of 10% first Gausses
+    gaussians.percent_10_index = int(0.1 * len(gaussians._opacity))
+    #gaussians._opacity[:gaussians.percent_10_index] += 0.2
+
+
+
+
+    #Copy first half to second half
+    #V[((sizeV+1)//2):sizeV] = V[0:(sizeV//2)]
+    """
+    gaussians._xyz [((nGausses+1)//2):nGausses] = gaussians._xyz [0:(nGausses//2)]
+    gaussians._features_dc [((nGausses+1)//2):nGausses] = gaussians._features_dc [0:(nGausses//2)]
+    gaussians._features_rest [((nGausses+1)//2):nGausses] = gaussians._features_rest [0:(nGausses//2)]
+    gaussians._rotation [((nGausses+1)//2):nGausses] = gaussians._rotation [0:(nGausses//2)]
+    gaussians._scaling [((nGausses+1)//2):nGausses] = gaussians._scaling [0:(nGausses//2)]
+    gaussians._opacity [((nGausses+1)//2):nGausses] = gaussians._opacity [0:(nGausses//2)]
+    gaussians.max_radii2D [((nGausses+1)//2):nGausses] = gaussians.max_radii2D [0:(nGausses//2)]
+    gaussians.xyz_gradient_accum [((nGausses+1)//2):nGausses] = gaussians.xyz_gradient_accum [0:(nGausses//2)]
+    gaussians.denom [((nGausses+1)//2):nGausses] = gaussians.denom [0:(nGausses//2)]
+    """
+    
+
+    #Add noise to xyz and scaling
+    #gaussians._xyz += torch.rand(gaussians._xyz.size(), device='cuda')
+    #gaussians._scaling += torch.rand(gaussians._scaling.size(), device='cuda')
+
+
+
+    #Print data from gaussians
+    print("xyz.shape:")
+    print(gaussians.get_xyz.shape)
+
+    print("_features_dc.shape")
+    print(gaussians._features_dc.shape)
+
+    print("_features_rest.shape")
+    print(gaussians._features_rest.shape)
+
+    print("_scaling.shape")
+    print(gaussians._scaling.shape)
+
+    print("rotation.shape")
+    print(gaussians._rotation.shape)
+
+    print("_opacity.shape")
+    print(gaussians._opacity.shape)
+
+    print("max_radii2D.shape")
+    print(gaussians.max_radii2D.shape)
+
+    print("xyz_gradient_accum.shape")
+    print(gaussians.xyz_gradient_accum.shape)
+
+    print("denom.shape")
+    print(gaussians.denom.shape)
+
+
+
+    
 
     viewpoint_stack = None
     ema_loss_for_log = 0.0
@@ -64,9 +174,12 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             except Exception as e:
                 network_gui.conn = None
 
+
         iter_start.record()
 
         gaussians.update_learning_rate(iteration)
+
+
 
         # Every 1000 its we increase the levels of SH up to a maximum degree
         if iteration % 1000 == 0:
@@ -80,10 +193,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         # Render
         if (iteration - 1) == debug_from:
             pipe.debug = True
-
-        bg = torch.rand((3), device="cuda") if opt.random_background else background
-
-        render_pkg = render(viewpoint_cam, gaussians, pipe, bg)
+        render_pkg = render(viewpoint_cam, gaussians, pipe, background)
         image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
 
         # Loss
@@ -220,3 +330,4 @@ if __name__ == "__main__":
 
     # All done
     print("\nTraining complete.")
+

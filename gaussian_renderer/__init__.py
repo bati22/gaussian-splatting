@@ -14,6 +14,7 @@ import math
 from diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianRasterizer
 from scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
+#from train import percent_10_index 
 
 def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None):
     """
@@ -80,6 +81,16 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
             shs = pc.get_features
     else:
         colors_precomp = override_color
+      
+    #print("RGB:")
+    #print(colors_precomp.shape)
+
+    #Multiply by -1 for second half of Gaussians
+    #size_colors_precomp = colors_precomp.size(0)
+    #colors_precomp[(size_colors_precomp//2):size_colors_precomp] = -(colors_precomp[(size_colors_precomp//2):size_colors_precomp])
+
+    #Multiply by -1 first 10% of Gaussians
+    colors_precomp[:pc.percent_10_index] *= -1
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     rendered_image, radii = rasterizer(
@@ -98,3 +109,4 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
             "viewspace_points": screenspace_points,
             "visibility_filter" : radii > 0,
             "radii": radii}
+
