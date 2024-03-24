@@ -90,7 +90,49 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     #colors_precomp[(size_colors_precomp//2):size_colors_precomp] = -(colors_precomp[(size_colors_precomp//2):size_colors_precomp])
 
     #Multiply by -1 first 10% of Gaussians
-    colors_precomp[:pc.percent_10_index] *= -1
+    #colors_precomp[:pc.percent_10_index] *= -1
+    colors_precomp[:30000] *= -1
+
+    #print("pc.percent_10_index: ")
+    #print(pc.percent_10_index);
+    #print()
+
+    """
+    print("Before resterizer: ")
+    index = 0
+    for i in range(0, 33):
+      for j in range(0, 3):
+          print(index, ":", end=' ')
+          print(colors_precomp[i][j])
+          index+=1
+    """
+
+    #Test1
+    #colors_precomp[:30000] *= -1
+
+    #Test2
+    #colors_precomp[:30000] *= -1
+    #colors_precomp[30000:] *= -1
+
+    #Test3
+    """
+    nGausses = means3D.shape[0]
+    print(nGausses)
+    means3D [((nGausses+1)//2):nGausses] = means3D [0:(nGausses//2)]
+    means2D [((nGausses+1)//2):nGausses] = means2D [0:(nGausses//2)]
+    if shs != None:
+      shs[((nGausses+1)//2):nGausses] = shs[0:(nGausses//2)]
+    colors_precomp [((nGausses+1)//2):nGausses] = colors_precomp[0:(nGausses//2)]
+    opacity [((nGausses+1)//2):nGausses] = opacity[0:(nGausses//2)]
+    scales [((nGausses+1)//2):nGausses] = scales [0:(nGausses//2)]
+    rotations [((nGausses+1)//2):nGausses] = rotations [0:(nGausses//2)]
+    if cov3D_precomp != None:
+      cov3D_precomp[((nGausses+1)//2):nGausses] = cov3D_precomp [0:(nGausses//2)]
+
+    for i in range(nGausses//2):
+      colors_precomp[i] *= -1
+    """
+
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     rendered_image, radii = rasterizer(
@@ -103,10 +145,17 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
         rotations = rotations,
         cov3D_precomp = cov3D_precomp)
 
+    #print("Rendered image: ")
+    #torch.set_printoptions(profile="full")
+    #print(rendered_image) # prints the whole tensor
+    #torch.set_printoptions(profile="default") # reset
+    #print()
+
     # Those Gaussians that were frustum culled or had a radius of 0 were not visible.
     # They will be excluded from value updates used in the splitting criteria.
     return {"render": rendered_image,
             "viewspace_points": screenspace_points,
             "visibility_filter" : radii > 0,
             "radii": radii}
+
 
