@@ -61,7 +61,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     gaussians.denom = torch.cat((gaussians.denom, gaussians.denom))
     """
 
-
+    """
     #Detach
     gaussians._xyz =  gaussians._xyz.detach()
     gaussians._features_dc = gaussians._features_dc.detach()
@@ -69,17 +69,17 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     gaussians._rotation = gaussians._rotation.detach()
     gaussians._scaling = gaussians._scaling.detach()
     gaussians._opacity =  gaussians._opacity.detach()
-    gaussians._scaling = gaussians._scaling.detach()
     gaussians.max_radii2D =  gaussians.max_radii2D.detach()
     gaussians.xyz_gradient_accum = gaussians.xyz_gradient_accum.detach()
     gaussians.denom =  gaussians.denom.detach()
+    """
 
 
 
     #Get number of Gausses
     nGausses = gaussians._xyz.size(0)
 
-
+    """
     #Shuffle
     r=torch.randperm(nGausses)
     gaussians._xyz = gaussians._xyz [r]
@@ -88,10 +88,23 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     gaussians._rotation = gaussians._rotation [r]
     gaussians._scaling = gaussians._scaling [r]
     gaussians._opacity = gaussians._opacity [r]
-    gaussians._scaling = gaussians._scaling [r]
     gaussians.max_radii2D = gaussians.max_radii2D [r]
     gaussians.xyz_gradient_accum = gaussians.xyz_gradient_accum [r]
     gaussians.denom = gaussians.denom [r]
+    """
+
+    """
+    #Grad
+    gaussians._xyz =  torch.tensor(gaussians._xyz, requires_grad=True)
+    gaussians._features_dc = torch.tensor(gaussians._features_dc, requires_grad=True)
+    gaussians._features_rest =  torch.tensor(gaussians._features_rest, requires_grad=True)
+    gaussians._rotation = torch.tensor(gaussians._rotation, requires_grad=True)
+    gaussians._scaling = torch.tensor(gaussians._scaling, requires_grad=True)
+    gaussians._opacity =  torch.tensor(gaussians._opacity, requires_grad=True)
+    gaussians.max_radii2D =  torch.tensor(gaussians.max_radii2D, requires_grad=True)
+    gaussians.xyz_gradient_accum = torch.tensor(gaussians.xyz_gradient_accum, requires_grad=True)
+    gaussians.denom =  torch.tensor(gaussians.denom, requires_grad=True)
+    """
 
 
     #Create index of 10% first Gausses and add 0.2 to opacity of 10% first Gausses
@@ -330,4 +343,5 @@ if __name__ == "__main__":
 
     # All done
     print("\nTraining complete.")
+
 

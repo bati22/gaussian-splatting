@@ -141,12 +141,47 @@ class GaussianModel:
 
         opacities = inverse_sigmoid(0.1 * torch.ones((fused_point_cloud.shape[0], 1), dtype=torch.float, device="cuda"))
 
-        self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
-        self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
-        self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
-        self._scaling = nn.Parameter(scales.requires_grad_(True))
-        self._rotation = nn.Parameter(rots.requires_grad_(True))
-        self._opacity = nn.Parameter(opacities.requires_grad_(True))
+        #Get number of Gausses
+        nGausses = fused_point_cloud.size(0)
+        
+        #Shuffle
+        r=torch.randperm(nGausses)
+        """
+        gaussians._xyz = gaussians._xyz [r]
+        gaussians._features_dc = gaussians._features_dc [r]
+        gaussians._features_rest = gaussians._features_rest [r]
+        gaussians._rotation = gaussians._rotation [r]
+        gaussians._scaling = gaussians._scaling [r]
+        gaussians._opacity = gaussians._opacity [r]
+        gaussians.max_radii2D = gaussians.max_radii2D [r]
+        gaussians.xyz_gradient_accum = gaussians.xyz_gradient_accum [r]
+        gaussians.denom = gaussians.denom [r]
+        """
+
+        xyz = fused_point_cloud [r]
+        self._xyz = nn.Parameter(xyz.requires_grad_(True))
+        #self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
+
+        features_dc = features[:,:,0:1].transpose(1, 2).contiguous() [r]
+        self._features_dc = nn.Parameter(features_dc.requires_grad_(True))
+        #self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
+
+        features_rest = features[:,:,1:].transpose(1, 2).contiguous() [r]
+        self._features_rest = nn.Parameter(features_rest.requires_grad_(True))
+        #self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
+
+        scaling = scales [r]
+        self._scaling = nn.Parameter(scaling.requires_grad_(True))
+        #self._scaling = nn.Parameter(scales.requires_grad_(True))
+
+        rotation = rots [r]
+        self._rotation = nn.Parameter(rotation.requires_grad_(True))
+        #self._rotation = nn.Parameter(rots.requires_grad_(True))
+
+        opacity = opacities [r]
+        self._opacity = nn.Parameter(opacity.requires_grad_(True))
+        #self._opacity = nn.Parameter(opacities.requires_grad_(True))
+
         self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
 
     def training_setup(self, training_args):
@@ -456,4 +491,5 @@ class GaussianModel:
     def add_densification_stats(self, viewspace_point_tensor, update_filter):
         self.xyz_gradient_accum[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter,:2], dim=-1, keepdim=True)
         self.denom[update_filter] += 1
+
 
