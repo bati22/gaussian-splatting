@@ -133,6 +133,20 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
       colors_precomp[i] *= -1
     """
 
+    """
+    #Negative Gausses - red coloring
+    for i in range(30000):
+      colors_precomp[i][0] = 1.0
+      colors_precomp[i][1] = 0
+      colors_precomp[i][2] = 0
+    """
+
+    """
+    #Save opacity to file
+    import numpy as np
+    np.savetxt('opacity.out', opacity.cpu().numpy(), delimiter=',')   # X is an array
+    """
+
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     rendered_image, radii = rasterizer(
@@ -151,12 +165,14 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     #torch.set_printoptions(profile="default") # reset
     #print()
 
+
     # Those Gaussians that were frustum culled or had a radius of 0 were not visible.
     # They will be excluded from value updates used in the splitting criteria.
     return {"render": rendered_image,
             "viewspace_points": screenspace_points,
             "visibility_filter" : radii > 0,
             "radii": radii}
+
 
 
 
