@@ -215,6 +215,47 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
         loss.backward()
 
+        # Zero Gradient for first 30k Gausses for 30k iterations
+        if iteration < 30000:
+          
+          """
+          gaussians._xyz [((nGausses+1)//2):nGausses] = gaussians._xyz [0:(nGausses//2)]
+          gaussians._features_dc [((nGausses+1)//2):nGausses] = gaussians._features_dc [0:(nGausses//2)]
+          gaussians._features_rest [((nGausses+1)//2):nGausses] = gaussians._features_rest [0:(nGausses//2)]
+          gaussians._rotation [((nGausses+1)//2):nGausses] = gaussians._rotation [0:(nGausses//2)]
+          gaussians._scaling [((nGausses+1)//2):nGausses] = gaussians._scaling [0:(nGausses//2)]
+          gaussians._opacity [((nGausses+1)//2):nGausses] = gaussians._opacity [0:(nGausses//2)]
+          gaussians.max_radii2D [((nGausses+1)//2):nGausses] = gaussians.max_radii2D [0:(nGausses//2)]
+          gaussians.xyz_gradient_accum [((nGausses+1)//2):nGausses] = gaussians.xyz_gradient_accum [0:(nGausses//2)]
+          gaussians.denom [((nGausses+1)//2):nGausses] = gaussians.denom [0:(nGausses//2)]
+          """
+          
+          gaussians._xyz.grad[:30000] = 0
+          gaussians._features_dc.grad[:30000] = 0
+          gaussians._features_rest.grad[:30000] = 0
+          gaussians._rotation.grad[:30000] = 0
+          gaussians._scaling.grad[:30000] = 0
+          gaussians._opacity.grad[:30000] = 0
+          if gaussians.max_radii2D.grad != None:
+            gaussians.max_radii2D.grad[:30000] = 0
+          if gaussians.xyz_gradient_accum.grad != None:
+            gaussians.xyz_gradient_accum.grad[:30000] = 0
+          if gaussians.denom.grad != None:
+            gaussians.denom.grad[:30000] = 0
+          #gaussians.max_radii2D[:30000] = 0
+          #gaussians.xyz_gradient_accum[:30000] = 0
+          #gaussians.denom[:30000] = 0
+          """
+          print("gaussians.max_radii2D: ")
+          print(gaussians.max_radii2D)
+          print("gaussians.xyz_gradient_accum: ")
+          print(gaussians.xyz_gradient_accum)
+          print("gaussians.denom: ")
+          print(gaussians.denom)
+          """
+          
+
+
         iter_end.record()
 
         with torch.no_grad():
@@ -232,6 +273,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 print("\n[ITER {}] Saving Gaussians".format(iteration))
                 scene.save(iteration)
 
+            """
             # Densification
             if iteration < opt.densify_until_iter:
                 # Keep track of max radii in image-space for pruning
@@ -244,6 +286,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 
                 if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
                     gaussians.reset_opacity()
+            """
 
             # Optimizer step
             if iteration < opt.iterations:

@@ -159,26 +159,32 @@ class GaussianModel:
         """
 
         xyz = fused_point_cloud [r]
+        xyz = torch.cat((xyz[:30000], xyz))
         self._xyz = nn.Parameter(xyz.requires_grad_(True))
         #self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
 
         features_dc = features[:,:,0:1].transpose(1, 2).contiguous() [r]
+        features_dc = torch.cat((features_dc[:30000], features_dc))
         self._features_dc = nn.Parameter(features_dc.requires_grad_(True))
         #self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
 
         features_rest = features[:,:,1:].transpose(1, 2).contiguous() [r]
+        features_rest = torch.cat((features_rest[:30000], features_rest))
         self._features_rest = nn.Parameter(features_rest.requires_grad_(True))
         #self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
 
         scaling = scales [r]
+        scaling = torch.cat((scaling[:30000], scaling))
         self._scaling = nn.Parameter(scaling.requires_grad_(True))
         #self._scaling = nn.Parameter(scales.requires_grad_(True))
 
         rotation = rots [r]
+        rotation = torch.cat((rotation[:30000], rotation))
         self._rotation = nn.Parameter(rotation.requires_grad_(True))
         #self._rotation = nn.Parameter(rots.requires_grad_(True))
 
         opacity = opacities [r]
+        opacity = torch.cat((opacity[:30000], opacity))
         self._opacity = nn.Parameter(opacity.requires_grad_(True))
         #self._opacity = nn.Parameter(opacities.requires_grad_(True))
 
