@@ -229,6 +229,15 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             # Log and save
             training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background))
             if (iteration in saving_iterations):
+              
+                # If last itreation, change colors of negatives to red
+                if iteration == opt.iterations:
+                  #Negative Gausses - red coloring
+                  for i in range(30000):
+                    gaussians._features_dc[i][0][0] = 1.0
+                    gaussians._features_dc[i][0][1] = 0
+                    gaussians._features_dc[i][0][2] = 0
+
                 print("\n[ITER {}] Saving Gaussians".format(iteration))
                 scene.save(iteration)
 
