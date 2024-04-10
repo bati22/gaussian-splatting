@@ -215,6 +215,46 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
         loss.backward()
 
+        # Zero Gradient for first 10k Gausses for 30k iterations
+        NUMBER_OF_GAUSSIANS_TO_ZERO = 10000
+        if iteration < 30000:
+          
+          """
+          gaussians._xyz [((nGausses+1)//2):nGausses] = gaussians._xyz [0:(nGausses//2)]
+          gaussians._features_dc [((nGausses+1)//2):nGausses] = gaussians._features_dc [0:(nGausses//2)]
+          gaussians._features_rest [((nGausses+1)//2):nGausses] = gaussians._features_rest [0:(nGausses//2)]
+          gaussians._rotation [((nGausses+1)//2):nGausses] = gaussians._rotation [0:(nGausses//2)]
+          gaussians._scaling [((nGausses+1)//2):nGausses] = gaussians._scaling [0:(nGausses//2)]
+          gaussians._opacity [((nGausses+1)//2):nGausses] = gaussians._opacity [0:(nGausses//2)]
+          gaussians.max_radii2D [((nGausses+1)//2):nGausses] = gaussians.max_radii2D [0:(nGausses//2)]
+          gaussians.xyz_gradient_accum [((nGausses+1)//2):nGausses] = gaussians.xyz_gradient_accum [0:(nGausses//2)]
+          gaussians.denom [((nGausses+1)//2):nGausses] = gaussians.denom [0:(nGausses//2)]
+          """
+          
+          gaussians._xyz.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          gaussians._features_dc.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          gaussians._features_rest.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          gaussians._rotation.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          gaussians._scaling.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          gaussians._opacity.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          if gaussians.max_radii2D.grad != None:
+            gaussians.max_radii2D.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          if gaussians.xyz_gradient_accum.grad != None:
+            gaussians.xyz_gradient_accum.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          if gaussians.denom.grad != None:
+            gaussians.denom.grad[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          #gaussians.max_radii2D[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          #gaussians.xyz_gradient_accum[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          #gaussians.denom[:NUMBER_OF_GAUSSIANS_TO_ZERO] = 0
+          """
+          print("gaussians.max_radii2D: ")
+          print(gaussians.max_radii2D)
+          print("gaussians.xyz_gradient_accum: ")
+          print(gaussians.xyz_gradient_accum)
+          print("gaussians.denom: ")
+          print(gaussians.denom)
+          """
+
         iter_end.record()
 
         with torch.no_grad():
