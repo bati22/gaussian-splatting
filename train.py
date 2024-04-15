@@ -216,7 +216,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         loss.backward()
 
         # Zero Gradient for first 10k Gausses for 30k iterations
-        NUMBER_OF_GAUSSIANS_TO_ZERO = 10000
+        NUMBER_OF_GAUSSIANS_TO_ZERO = 20000
         if iteration < 30000:
           
           """
