@@ -215,8 +215,8 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
         loss.backward()
 
-        # Zero Gradient for first 10k Gausses for 30k iterations
-        NUMBER_OF_GAUSSIANS_TO_ZERO = 20000
+        # Zero Gradient for first 30k Gausses for 30k iterations
+        NUMBER_OF_GAUSSIANS_TO_ZERO = 30000
         if iteration < 30000:
           
           """

@@ -133,7 +133,7 @@ class GaussianModel:
         features[:, 3:, 1:] = 0.0
 
         #Get only 20k first points
-        fused_point_cloud = fused_point_cloud[:30000]
+        fused_point_cloud = fused_point_cloud[:40000]
 
         print("Number of points at initialisation : ", fused_point_cloud.shape[0])
 
