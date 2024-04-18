@@ -162,26 +162,32 @@ class GaussianModel:
         """
 
         xyz = fused_point_cloud [r]
+        xyz[0:10000] = xyz[10000:20000]
         self._xyz = nn.Parameter(xyz.requires_grad_(True))
         #self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
 
         features_dc = features[:,:,0:1].transpose(1, 2).contiguous() [r]
+        features_dc[0:10000] = features_dc[10000:20000]
         self._features_dc = nn.Parameter(features_dc.requires_grad_(True))
         #self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
 
         features_rest = features[:,:,1:].transpose(1, 2).contiguous() [r]
+        features_rest[0:10000] = features_rest[10000:20000]
         self._features_rest = nn.Parameter(features_rest.requires_grad_(True))
         #self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
 
         scaling = scales [r]
+        scaling[0:10000] = scaling[10000:20000]
         self._scaling = nn.Parameter(scaling.requires_grad_(True))
         #self._scaling = nn.Parameter(scales.requires_grad_(True))
 
         rotation = rots [r]
+        rotation[0:10000] = rotation[10000:20000]
         self._rotation = nn.Parameter(rotation.requires_grad_(True))
         #self._rotation = nn.Parameter(rots.requires_grad_(True))
 
         opacity = opacities [r]
+        opacity[0:10000] = opacity[10000:20000]
         self._opacity = nn.Parameter(opacity.requires_grad_(True))
         #self._opacity = nn.Parameter(opacities.requires_grad_(True))
 
