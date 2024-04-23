@@ -215,8 +215,12 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
         loss.backward()
 
+
+        
+
+
         # Zero Gradient for first 10k Gausses for 30k iterations
-        NUMBER_OF_GAUSSIANS_TO_ZERO = 20000
+        NUMBER_OF_GAUSSIANS_TO_ZERO = 10000
         if iteration < 30000:
           
           """
@@ -258,6 +262,17 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         iter_end.record()
 
         with torch.no_grad():
+
+            #Color 
+            if iteration == 60000:
+              print("COLORING")
+              print(gaussians._features_dc.shape)
+              for i in range(10000):
+                gaussians._features_dc[i][0][0] = 1
+                gaussians._features_dc[i][0][1] = 0
+                gaussians._features_dc[i][0][2] = 0
+
+
             # Progress bar
             ema_loss_for_log = 0.4 * loss.item() + 0.6 * ema_loss_for_log
             if iteration % 10 == 0:
