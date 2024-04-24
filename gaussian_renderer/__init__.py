@@ -89,9 +89,8 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     #size_colors_precomp = colors_precomp.size(0)
     #colors_precomp[(size_colors_precomp//2):size_colors_precomp] = -(colors_precomp[(size_colors_precomp//2):size_colors_precomp])
 
-    #Multiply by -1 first 10% of Gaussians
-    #colors_precomp[:pc.percent_10_index] *= -1
-    #colors_precomp[:30000] *= -1
+    #Multiply by -1 color of first 100 Gaussians
+    colors_precomp[:100] *= -1
 
     #print("pc.percent_10_index: ")
     #print(pc.percent_10_index);
