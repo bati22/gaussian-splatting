@@ -226,6 +226,14 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             if iteration == opt.iterations:
                 progress_bar.close()
 
+            #Color on red and set opacity=1 for negative gaussians
+            if iteration == 30000:
+              for i in range(100):
+                gaussians._features_dc[i][0][0] = 9
+                gaussians._features_dc[i][0][1] = -9
+                gaussians._features_dc[i][0][2] = -9
+                gaussians._opacity[i] = 9
+
             # Log and save
             training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background))
             if (iteration in saving_iterations):
