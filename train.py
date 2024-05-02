@@ -230,7 +230,38 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background))
             if (iteration in saving_iterations):
                 print("\n[ITER {}] Saving Gaussians".format(iteration))
-                scene.save(iteration)
+                scene.save(iteration, "normal")
+
+
+            LAST_ITERATION = 70000
+
+
+            #Color on red and set opacity=1 for negative gaussians
+            if iteration == LAST_ITERATION:
+              for i in range(30000):
+                gaussians._features_dc[i][0][0] = 9
+                gaussians._features_dc[i][0][1] = -9
+                gaussians._features_dc[i][0][2] = -9
+                gaussians._opacity[0][i] = 9
+
+            # Log and save
+            training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background))
+            if (iteration in saving_iterations):
+                print("\n[ITER {}] Saving Gaussians".format(iteration))
+                scene.save(iteration, "red")
+
+
+            #Set opacity=1 for negative gaussians
+            if iteration == LAST_ITERATION:
+              for i in range(30000):
+                gaussians._opacity[0][i] = -9
+
+
+            # Log and save
+            training_report(tb_writer, iteration, Ll1, loss, l1_loss, iter_start.elapsed_time(iter_end), testing_iterations, scene, render, (pipe, background))
+            if (iteration in saving_iterations):
+                print("\n[ITER {}] Saving Gaussians".format(iteration))
+                scene.save(iteration, "0_opacity")
 
             # Densification
             if iteration < opt.densify_until_iter:
