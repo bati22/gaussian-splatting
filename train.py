@@ -233,7 +233,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 scene.save(iteration, "normal")
 
 
-            LAST_ITERATION = 70000
+            LAST_ITERATION = 30000
 
 
             #Color on red and set opacity=1 for negative gaussians
