@@ -147,6 +147,17 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     np.savetxt('opacity.out', opacity.cpu().numpy(), delimiter=',')   # X is an array
     """
 
+    #print("opaciaty before: ")
+    #print(opacity)
+
+    #Set opacity=1 for negative Gaussians
+    opacity_with_1_for_negatives = opacity.clone()
+    opacity_with_1_for_negatives[:30000, 0] = 1
+
+
+    #print("opacity after: ")
+    #print(opacity_with_1_for_negatives)
+
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     rendered_image, radii = rasterizer(
@@ -154,7 +165,7 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
         means2D = means2D,
         shs = shs,
         colors_precomp = colors_precomp,
-        opacities = opacity,
+        opacities = opacity_with_1_for_negatives,
         scales = scales,
         rotations = rotations,
         cov3D_precomp = cov3D_precomp)
