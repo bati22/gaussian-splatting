@@ -243,6 +243,7 @@ def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
 
         storePly(ply_path, xyz, SH2RGB(shs) * 255)
     try:
+        print("Structure from motion?????????????????")
         pcd = fetchPly(ply_path)
     except:
         pcd = None
